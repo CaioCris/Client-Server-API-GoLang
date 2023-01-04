@@ -4,7 +4,7 @@ import (
 	"Client-Server-API-GoLang/domain"
 	"context"
 	"encoding/json"
-	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 	"os"
@@ -35,8 +35,9 @@ func writeDollarExchangeRateFile() {
 			panic(err)
 		}
 	}(file)
-	_, err = file.WriteString(fmt.Sprintf("Dólar: {%v}", exchangeRate.USDBRL.Bid))
-
+	t, err := template.New("cotacao").Parse("Dólar: {{.Bid}}")
+	tmp := template.Must(t, err)
+	err = tmp.Execute(file, exchangeRate.USDBRL)
 }
 
 func getDollarExchangeRate() *domain.ExchangeRate {
