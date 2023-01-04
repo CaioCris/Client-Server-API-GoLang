@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func getUSDBRLExchangeRate() *domain.ExchangeRate {
+func getUSDBRLExchangeRate() (*domain.ExchangeRate, error) {
 	exchangeUrl := "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 
 	ctx := context.Background()
@@ -17,26 +17,26 @@ func getUSDBRLExchangeRate() *domain.ExchangeRate {
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "GET", exchangeUrl, nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			panic(err)
 		}
 	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var data domain.ExchangeRate
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &data
+	return &data, nil
 }

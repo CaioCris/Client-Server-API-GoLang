@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -21,20 +22,24 @@ func main() {
 	exchangeServer()
 }
 
-func exchangeHandler(write http.ResponseWriter, _ *http.Request) {
-	var dollarRate = getUSDBRLExchangeRate()
-	write.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(write).Encode(dollarRate)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func exchangeServer() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/cotacao", exchangeHandler)
-	err := http.ListenAndServe(":8080", mux)
+	log.Fatal(http.ListenAndServe(":8080", mux))
+}
+
+func exchangeHandler(write http.ResponseWriter, _ *http.Request) {
+	var dollarRate, err = getUSDBRLExchangeRate()
 	if err != nil {
-		panic(err)
+		write.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+	write.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(write).Encode(dollarRate)
+	if err != nil {
+		write.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 }
