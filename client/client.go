@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"Client-Server-API-GoLang/domain"
@@ -19,24 +19,31 @@ import (
 
 // O client.go terá que salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
 
-func DollarExchangeRateFile() {
-	var exchangeRate = DollarExchangeRateClient()
+func main() {
+	writeDollarExchangeRateFile()
+}
+
+func writeDollarExchangeRateFile() {
+	var exchangeRate = getDollarExchangeRate()
 	file, err := os.Create("cotacao.txt")
 	if err != nil {
 		panic(err)
 	}
-	file.WriteString(fmt.Sprintf("Dólar: {%v}", exchangeRate.USDBRL.Bid))
-	err = file.Close()
-	if err != nil {
-		panic(err)
-	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
+	_, err = file.WriteString(fmt.Sprintf("Dólar: {%v}", exchangeRate.USDBRL.Bid))
+
 }
 
-func DollarExchangeRateClient() *domain.ExchangeRate {
+func getDollarExchangeRate() *domain.ExchangeRate {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 300*time.Millisecond)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost:8080/cotacao", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:8080/cotacao", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +54,7 @@ func DollarExchangeRateClient() *domain.ExchangeRate {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			panic(err)
 		}
 	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)

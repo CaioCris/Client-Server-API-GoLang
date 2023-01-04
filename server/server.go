@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"encoding/json"
@@ -17,8 +17,12 @@ import (
 // O endpoint necessário gerado pelo server.go para este desafio será:
 // /cotacao e a porta a ser utilizada pelo servidor HTTP será a 8080.
 
-func ExchangeHandler(write http.ResponseWriter, _ *http.Request) {
-	var dollarRate = GetDollarExchangeRate()
+func main() {
+	exchangeServer()
+}
+
+func exchangeHandler(write http.ResponseWriter, _ *http.Request) {
+	var dollarRate = getUSDBRLExchangeRate()
 	write.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(write).Encode(dollarRate)
 	if err != nil {
@@ -26,9 +30,9 @@ func ExchangeHandler(write http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func ExchangeServer() {
+func exchangeServer() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/cotacao", ExchangeHandler)
+	mux.HandleFunc("/cotacao", exchangeHandler)
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		panic(err)

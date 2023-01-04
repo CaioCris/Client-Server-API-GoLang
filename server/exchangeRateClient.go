@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"Client-Server-API-GoLang/domain"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func GetDollarExchangeRate() *domain.ExchangeRate {
+func getUSDBRLExchangeRate() *domain.ExchangeRate {
 	exchangeUrl := "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 
 	ctx := context.Background()
